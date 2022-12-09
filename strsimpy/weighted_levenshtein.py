@@ -19,18 +19,19 @@
 # SOFTWARE.
 
 from functools import reduce
+
 from .string_distance import StringDistance
 
 
-def default_insertion_cost(char):
+def default_insertion_cost(char, pos):
     return 1.0
 
 
-def default_deletion_cost(char):
+def default_deletion_cost(char, pos, len):
     return 1.0
 
 
-def default_substitution_cost(char_a, char_b):
+def default_substitution_cost(char_a, char_b, pos):
     return 1.0
 
 
@@ -53,27 +54,27 @@ class WeightedLevenshtein(StringDistance):
         if s0 == s1:
             return 0.0
         if len(s0) == 0:
-            return reduce(lambda cost, char: cost + self.insertion_cost_fn(char), s1, 0)
+            return reduce(lambda cost, char: cost + self.insertion_cost_fn(char, 0), s1, 0)
         if len(s1) == 0:
-            return reduce(lambda cost, char: cost + self.deletion_cost_fn(char), s0, 0)
+            return reduce(lambda cost, char: cost + self.deletion_cost_fn(char, 0, len(s1)), s0, 0)
 
         v0, v1 = [0.0] * (len(s1) + 1), [0.0] * (len(s1) + 1)
 
         v0[0] = 0
         for i in range(1, len(v0)):
-            v0[i] = v0[i - 1] + self.insertion_cost_fn(s1[i - 1])
+            v0[i] = v0[i - 1] + self.insertion_cost_fn(s1[i - 1], i - 1)
 
         for i in range(len(s0)):
             s0i = s0[i]
-            deletion_cost = self.deletion_cost_fn(s0i)
+            deletion_cost = self.deletion_cost_fn(s0i, i, len(s0))
             v1[0] = v0[0] + deletion_cost
 
             for j in range(len(s1)):
                 s1j = s1[j]
                 cost = 0
                 if s0i != s1j:
-                    cost = self.substitution_cost_fn(s0i, s1j)
-                insertion_cost = self.insertion_cost_fn(s1j)
+                    cost = self.substitution_cost_fn(s0i, s1j, i)
+                insertion_cost = self.insertion_cost_fn(s1j, i)
                 v1[j + 1] = min(v1[j] + insertion_cost, v0[j + 1] + deletion_cost, v0[j] + cost)
             v0, v1 = v1, v0
 
