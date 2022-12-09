@@ -10,7 +10,7 @@ git_version = subprocess.run(["git", "rev-list", "--count", "HEAD"], stdout=subp
 
 setuptools.setup(
     name="strsimpy",
-    version="0.2" + git_version,
+    version="0.2." + git_version,
     description="A library implementing different string similarity and distance measures",
     long_description=long_description,
     long_description_content_type="text/markdown",
